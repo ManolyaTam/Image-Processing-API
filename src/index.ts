@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { resizeImage } from './resize';
 
-const app = express()
+export const app = express()
 const port = 3000
 
 app.get('/', (req: express.Request, res: express.Response) => {
