@@ -1,60 +1,64 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple Image Gallery</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      text-align: center;
-    }
-
-    h1 {
-      margin-bottom: 10px;
-    }
-
-    p {
-      margin-bottom: 20px;
-    }
-
-    .gallery img {
-      width: 30%;
-      max-width: 300px;
-      margin: 5px;
-      display: inline-block;
-      vertical-align: middle;
-    }
-  </style>
-</head>
-
-<body>
-  <h1>Image Gallery</h1>
-  <p>Choose an image to preview and resize. Click on a thumbnail to open the full image.</p>
-
-  <div class="gallery" id="gallery"></div>
-
-  <script>
-    async function loadGallery() {
-      const galleryDiv = document.getElementById('gallery');
-      try {
-        const res = await fetch('/api/allImages');
-        const files = await res.json();
-        galleryDiv.innerHTML = files.map(file =>
-          `<a href="/api/image?filename=${file}" target="_blank">
-             <img src="/images/${file}" alt="${file}">
-           </a>`
-        ).join('');
-      } catch (err) {
-        galleryDiv.innerHTML = 'Failed to load images.';
-        console.error(err);
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Image Gallery</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        text-align: center;
       }
-    }
 
-    loadGallery();
-  </script>
-</body>
+      h1 {
+        margin-bottom: 10px;
+      }
 
+      p {
+        margin-bottom: 20px;
+      }
+
+      .gallery img {
+        width: 30%;
+        max-width: 300px;
+        margin: 5px;
+        display: inline-block;
+        vertical-align: middle;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Image Gallery</h1>
+    <p>
+      Choose an image to preview and resize. Click on a thumbnail to open the
+      full image.
+    </p>
+
+    <div class="gallery" id="gallery"></div>
+
+    <script>
+      async function loadGallery() {
+        const galleryDiv = document.getElementById("gallery");
+        try {
+          const res = await fetch("/api/allImages");
+          const files = await res.json();
+          galleryDiv.innerHTML = files
+            .map(
+              (file) =>
+                `<a href="/api/image?filename=${file}" target="_blank">
+             <img src="/images/${file}" alt="${file}">
+           </a>`,
+            )
+            .join("");
+        } catch (err) {
+          galleryDiv.innerHTML = "Failed to load images.";
+          console.error(err);
+        }
+      }
+
+      loadGallery();
+    </script>
+  </body>
 </html>
