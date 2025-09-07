@@ -1,59 +1,68 @@
-import express from 'express'
+import express from 'express';
 import path from 'path';
 import fs from 'fs';
-import { resizeImage } from './resize';
+import { resizeImage } from '../src/resize';
 
-export const app = express()
-const port = 3000
+export const app = express();
+const port = 3000;
+const projectRoot = path.resolve(__dirname, '../../');
 
-app.get('/', (req: express.Request, res: express.Response) => {
-  res.send('Hello There!');
-})
+// Serve images folder
+app.use('/images', express.static(path.join(projectRoot, 'images')));
 
-
-app.get('/api/images', async (req: express.Request, res: express.Response) => {
+// Route: get a single image, optionally resized
+app.get('/api/image', async (req, res) => {
   const { filename, width, height } = req.query;
+
   if (!filename || typeof filename !== 'string') {
     return res.status(400).send('filename is required');
   }
 
-  const sourceImagePath = path.join(process.cwd(), 'images', filename);
+  const sourceImagePath = path.join(projectRoot, 'images', filename);
 
-  // Check if source image exists
   if (!fs.existsSync(sourceImagePath)) {
     return res.status(404).send('Source image not found');
   }
 
   if (width && height) {
-    if (isNaN(Number(width)) || isNaN(Number(height))) {
-      return res.status(400).send('width and height must be numbers');
-    }
+    const w = Number(width);
+    const h = Number(height);
+    if (isNaN(w) || isNaN(h)) return res.status(400).send('width and height must be numbers');
 
-    const resizedDir = path.join(process.cwd(), 'cache');
-    if (!fs.existsSync(resizedDir)) {
-      fs.mkdirSync(resizedDir);
-    }
-    const resizedImagePath = path.join(
-      resizedDir,
-      `resized-${filename}-${width}x${height}.jpg`
-    );
+    const cacheDir = path.join(projectRoot, 'cache');
+    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
 
-    // Resize only if not already present
+    const resizedImagePath = path.join(cacheDir, `resized-${filename}-${w}x${h}.jpg`);
     if (!fs.existsSync(resizedImagePath)) {
-      console.log('Creating a resized image');
-      await resizeImage(sourceImagePath, Number(width), Number(height), resizedImagePath);
+      console.log(`Resizing ${filename} to ${w}x${h}`);
+      await resizeImage(sourceImagePath, w, h, resizedImagePath);
     }
 
     return res.status(200).contentType('jpg').sendFile(resizedImagePath);
   }
 
-  res.sendFile(sourceImagePath, err => {
-    if (err) {
-      res.status(404).send('Image not found');
-    }
-  });
+  res.sendFile(sourceImagePath);
+});
+
+// Serve index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(projectRoot, 'public', 'index.html'));
 });
 
 app.listen(port, () => {
-  console.log(`listening on port ${port}`)
-})
+  console.log(`Server running on port ${port}`);
+});
+
+// Route: list all images
+app.get('/api/allImages', (req, res) => {
+  const imagesDir = path.join(projectRoot, 'images');
+  try {
+    const files = fs.readdirSync(imagesDir).filter(file =>
+      /\.(jpg|jpeg|png|gif)$/i.test(file)
+    );
+    res.json(files);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to read images folder' });
+  }
+});
