@@ -53,10 +53,6 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(projectRoot, "public", "index.html"));
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
-
 // Route: list all images
 app.get("/api/allImages", (req, res) => {
   const imagesDir = path.join(projectRoot, "images");
@@ -69,4 +65,9 @@ app.get("/api/allImages", (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Failed to read images folder" });
   }
+});
+
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
